@@ -178,7 +178,8 @@ class map(object):
                 "lastnonscan": spawn["lastnonscan"],
                 "lastscan": spawn["lastscan"],
                 "first_detection": spawn["first_detection"],
-                "event": spawn["event"]
+                "event": spawn["event"],
+                "dead_counter": spawn["dead_counter"]
             })
 
         cluster_spawns = []

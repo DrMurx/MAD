@@ -807,8 +807,8 @@ new Vue({
                                 color: color,
                                 fillColor: color,
                                 weight: 1,
-                                opacity: 0.7,
-                                fillOpacity: 0.5,
+                                opacity: 0.7 - Math.min(spawn["dead_counter"], 10) * 0.05,
+                                fillOpacity: 0.5 - Math.min(spawn["dead_counter"], 10) * 0.04,
                                 id: spawn["id"],
                                 event: eventname
                             }).bindPopup($this.build_spawn_popup, {'className': 'spawnpopup'});
