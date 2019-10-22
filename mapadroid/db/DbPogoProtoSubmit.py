@@ -223,7 +223,8 @@ class DbPogoProtoSubmit:
             "by event_start desc limit 1)=1 and eventid=1) or (select id from trs_event where now() between "
             "event_start and event_end order by event_start desc limit 1)<>1 and eventid<>1, VALUES(spawndef), "
             "spawndef), "
-            "calc_endminsec=VALUES(calc_endminsec)"
+            "calc_endminsec=VALUES(calc_endminsec), "
+            "dead_counter=0"
         )
 
         query_spawnpoints_unseen = (
@@ -236,7 +237,8 @@ class DbPogoProtoSubmit:
             "by event_start desc limit 1)=1 and eventid=1) or (select id from trs_event where now() between "
             "event_start and event_end order by event_start desc limit 1)<>1 and eventid<>1, VALUES(spawndef), "
             "spawndef), "
-            "last_non_scanned=VALUES(last_non_scanned)"
+            "last_non_scanned=VALUES(last_non_scanned), "
+            "dead_counter=0"
         )
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

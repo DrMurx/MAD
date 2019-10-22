@@ -731,7 +731,8 @@ class DbWrapper:
             "FROM trs_spawn "
             "WHERE (latitude >= {} AND longitude >= {} "
             "AND latitude <= {} AND longitude <= {}) and "
-            "eventid in ({})"
+            "eventid in ({}) "
+            "AND dead_counter < 10 "
         ).format(minLat, minLon, maxLat, maxLon, str(', '.join(str(v) for v in event_ids)))
 
         list_of_coords: List[Location] = []
@@ -960,7 +961,8 @@ class DbWrapper:
             "FROM trs_spawn "
             "WHERE calc_endminsec IS NOT NULL "
             "AND (latitude >= {} AND longitude >= {} AND latitude <= {} AND longitude <= {}) "
-            "AND eventid in (1, {})"
+            "AND eventid in (1, {}) "
+            "AND dead_counter < 10"
         ).format(minLat, minLon, maxLat, maxLon, self._event_id)
 
         res = self.execute(query)
