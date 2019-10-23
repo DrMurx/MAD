@@ -879,7 +879,6 @@ class DbWrapper:
                         olderthanxdays=None):
         logger.debug("dbWrapper::download_spawns")
         spawn = {}
-        query_where = ""
 
         query = (
             "SELECT spawnpoint, latitude, longitude, calc_endminsec, "
@@ -887,44 +886,45 @@ class DbWrapper:
             "first_detection, if(last_non_scanned is not Null,last_non_scanned, '1970-01-01 00:00:00'), "
             "trs_event.event_name, trs_event.id, dead_counter "
             "FROM `trs_spawn` inner join trs_event on trs_event.id = trs_spawn.eventid "
+            "WHERE dead_counter < 20"
         )
 
         if neLat is not None:
-            query_where = (
-                " WHERE (latitude >= {} AND longitude >= {} "
-                " AND latitude <= {} AND longitude <= {}) "
+            query += (
+                " AND (latitude >= {} AND longitude >= {}"
+                " AND latitude <= {} AND longitude <= {})"
             ).format(swLat, swLon, neLat, neLon)
 
         if oNeLat is not None and oNeLon is not None and oSwLat is not None and oSwLon is not None:
-            query_where += (
-                " AND NOT (latitude >= {} AND longitude >= {} "
-                " AND latitude <= {} AND longitude <= {}) "
+            query += (
+                " AND NOT (latitude >= {} AND longitude >= {}"
+                " AND latitude <= {} AND longitude <= {})"
             ).format(oSwLat, oSwLon, oNeLat, oNeLon)
 
         elif timestamp is not None:
             tsdt = datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
-
-            query_where += (
-                " AND last_scanned >= '{}' "
+            query += (
+                " AND last_scanned >= '{}'"
             ).format(tsdt)
 
         if fence is not None:
-            query_where = " WHERE ST_CONTAINS(ST_GEOMFROMTEXT( 'POLYGON(( {} ))'), " \
-                          "POINT(trs_spawn.latitude, trs_spawn.longitude))".format(str(fence))
+            query += (
+                " AND ST_CONTAINS(ST_GEOMFROMTEXT('POLYGON(( {} ))'),"
+                " POINT(trs_spawn.latitude, trs_spawn.longitude))"
+            ).format(str(fence))
 
         if eventid is not None:
-            query_where += " AND eventid = {}".format(str(eventid))
+            query += " AND eventid = {}".format(str(eventid))
 
         if todayonly:
-            query_where += " AND (DATE(last_scanned) = DATE(NOW()) OR DATE(last_non_scanned) = DATE(NOW())) "
+            query += " AND (DATE(last_scanned) = DATE(NOW()) OR DATE(last_non_scanned) = DATE(NOW())) "
 
         if olderthanxdays is not None:
-            query_where += " AND (DATE(IF(last_scanned IS NOT Null,last_scanned, '1970-01-01 00:00:00'))" \
-                           " < DATE(NOW()) - INTERVAL {} DAY AND " \
-                           "DATE(IF(last_non_scanned IS NOT Null,last_non_scanned, '1970-01-01 00:00:00')) " \
-                           "< DATE(NOW()) - INTERVAL {} DAY)".format(str(olderthanxdays), str(olderthanxdays))
+            query += " AND (DATE(IF(last_scanned IS NOT NULL, last_scanned, '1970-01-01 00:00:00'))" \
+                     " < DATE(NOW()) - INTERVAL {} DAY AND " \
+                     "DATE(IF(last_non_scanned IS NOT NULL, last_non_scanned, '1970-01-01 00:00:00')) " \
+                     "< DATE(NOW()) - INTERVAL {} DAY)".format(str(olderthanxdays), str(olderthanxdays))
 
-        query += query_where
         res = self.execute(query)
 
         for (spawnid, lat, lon, endtime, spawndef, last_scanned, first_detection, last_non_scanned, eventname, eventid, \
