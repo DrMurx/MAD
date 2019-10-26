@@ -263,6 +263,7 @@ class DbWrapper:
             "FROM pokestop "
             "WHERE (latitude >= {} AND longitude >= {} "
             "AND latitude <= {} AND longitude <= {}) "
+            "AND dead = 0 "
         ).format(minLat, minLon, maxLat, maxLon)
 
         res = self.execute(query)
@@ -429,6 +430,7 @@ class DbWrapper:
             "LEFT JOIN trs_quest ON pokestop.pokestop_id = trs_quest.GUID "
             "WHERE (pokestop.latitude >= {} AND pokestop.longitude >= {} "
             "AND pokestop.latitude <= {} AND pokestop.longitude <= {}) "
+            "AND pokestop.dead = 0 "
             "AND (DATE(from_unixtime(trs_quest.quest_timestamp,'%Y-%m-%d')) <> CURDATE() "
             "OR trs_quest.GUID IS NULL)"
         ).format(minLat, minLon, maxLat, maxLon)
@@ -454,6 +456,7 @@ class DbWrapper:
             "LEFT JOIN trs_visited ON (pokestop.pokestop_id = trs_visited.pokestop_id AND trs_visited.origin='{}') "
             "WHERE pokestop.latitude >= {} AND pokestop.longitude >= {} "
             "AND pokestop.latitude <= {} AND pokestop.longitude <= {} "
+            "AND pokestop.dead = 0 "
             "AND trs_visited.origin IS NULL LIMIT 1"
         ).format(origin, minLat, minLon, maxLat, maxLon)
 
@@ -477,7 +480,8 @@ class DbWrapper:
             "LEFT JOIN trs_visited ON (pokestop.pokestop_id = trs_visited.pokestop_id AND trs_visited.origin='{}') "
             "WHERE pokestop.latitude >= {} AND pokestop.longitude >= {} "
             "AND pokestop.latitude <= {} AND pokestop.longitude <= {} "
-            "AND trs_visited.origin IS NULL"
+            "AND trs_visited.origin IS NULL "
+            "AND pokestop.dead = 0"
         ).format(origin, minLat, minLon, maxLat, maxLon)
 
         res = self.execute(query)
@@ -697,9 +701,9 @@ class DbWrapper:
         return pokestops
 
     def delete_stop(self, latitude: float, longitude: float):
-        logger.debug('Deleting stop from db')
+        logger.debug('Disable stop in DB')
         query = (
-            "delete from pokestop where latitude=%s and longitude=%s"
+            "UPDATE pokestop SET dead = 1 WHERE latitude=%s AND longitude=%s"
         )
         del_vars = (latitude, longitude)
         self.execute(query, del_vars, commit=True)
