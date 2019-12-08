@@ -498,6 +498,7 @@ class statistics(object):
                                title="Worker status")
 
     @auth_required
+    @logger.catch()
     def get_status(self):
         device_status = self._db.download_status()
         areas = self._mapping_manager.get_areas()
