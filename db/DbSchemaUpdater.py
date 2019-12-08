@@ -242,19 +242,38 @@ class DbSchemaUpdater:
 
 
     def check_create_column(self, column_mod: dict):
+        """
+        Creates a column as specified by the `column_mod` dictionary if it doesn't exist.
+        Raises a `SchemaUpdateError` if column wasn't created properly.
+        :param column_mod:
+        :return:
+        """
         if self.check_column_exists(column_mod["table"], column_mod["column"]):
             return
-        self.create_column(column_mod)
+        self._create_or_modify_column("ADD", column_mod)
         if not self.check_column_exists(column_mod["table"], column_mod["column"]):
             raise SchemaUpdateError(column_mod)
         logger.info("Successfully added column '{}.{}'", column_mod["table"], column_mod["column"])
 
 
-    def create_column(self, column_mod: dict):
+    def check_modify_column(self, column_mod: dict):
+        """
+        Modifies a column as specified by the `column_mod` dictionary.
+        Raises a `SchemaUpdateError` if the column doesn't exist.
+        :param column_mod:
+        :return:
+        """
+        if not self.check_column_exists(column_mod["table"], column_mod["column"]):
+            raise SchemaUpdateError(column_mod)
+        self._create_or_modify_column("MODIFY", column_mod)
+        logger.info("Successfully modified column '{}.{}'", column_mod["table"], column_mod["column"])
+
+
+    def _create_or_modify_column(self, modifier, column_mod: dict):
         alter_query = (
             "ALTER TABLE {} "
-            "ADD COLUMN {} {}"
-            .format(column_mod["table"], column_mod["column"], column_mod["ctype"])
+            "{} COLUMN {} {}"
+            .format(column_mod["table"], modifier, column_mod["column"], column_mod["ctype"])
         )
         if "modify_key" in column_mod:
             alter_query = alter_query + ", " + column_mod["modify_key"]

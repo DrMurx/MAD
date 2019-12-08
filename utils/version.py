@@ -12,7 +12,7 @@ import copy
 from db.DbWrapper import DbWrapper
 from db.DbSchemaUpdater import DbSchemaUpdater
 
-current_version = 19
+current_version = 20
 
 class MADVersion(object):
 
@@ -547,6 +547,30 @@ class MADVersion(object):
                 )
                 try:
                     self.dbwrapper.execute(alter_query, commit=True)
+                except Exception as e:
+                    logger.exception("Unexpected error: {}", e)
+        if self._version < 20:
+            ## Modify those columns from varchar
+            column_mods = [
+                {
+                    "table": "trs_status",
+                    "column": "lastProtoDateTime",
+                    "ctype": "datetime NULL DEFAULT NULL"
+                },
+                {
+                    "table": "trs_status",
+                    "column": "lastPogoRestart",
+                    "ctype": "datetime NULL DEFAULT NULL"
+                },
+                {
+                    "table": "trs_status",
+                    "column": "lastPogoReboot",
+                    "ctype": "datetime NULL DEFAULT NULL"
+                }
+            ]
+            for column_mod in column_mods:
+                try:
+                    self._schema_updater.check_modify_column(column_mod)
                 except Exception as e:
                     logger.exception("Unexpected error: {}", e)
 

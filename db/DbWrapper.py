@@ -11,6 +11,7 @@ from bitstring import BitArray
 from utils.collections import Location, LocationWithVisits
 from utils.logging import logger
 from utils.s2Helper import S2Helper
+from utils.datetimeHelper import convertdatetimestring
 from db.DbSanityCheck import DbSanityCheck
 from db.DbSchemaUpdater import DbSchemaUpdater
 from db.DbPogoProtoSubmit import DbPogoProtoSubmit
@@ -933,9 +934,10 @@ class DbWrapper:
         )
         result = self.autofetch_all(query, args=(self.instance_id))
         for row in result:
-            dt_fields = ['lastProtoDateTime', 'lastPogoRestart']
+            dt_fields = ["lastProtoDateTime", "lastPogoRestart", "lastPogoReboot"]
             for field in dt_fields:
-                row[field] = str(row[field]) if row[field] is not None else None
+                row[field] = convertdatetimestring(row[field], in_tz=None, out_tz=None)
+                row[field + "UTC"] = convertdatetimestring(row[field], in_tz=None)
             workerstatus.append(row)
         return workerstatus
 
