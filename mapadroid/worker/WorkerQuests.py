@@ -682,6 +682,7 @@ class WorkerQuests(MITMBase):
         # by now we should've found the stop in the GMO
         # TODO: consider counter in DB for stop and delete if N reached, reset when updating with GMO
         logger.warning("Can't spin stop - couldn't find it closeby!")
+        #self._db_wrapper.delete_stop(self.current_location.lat, self.current_location.lng)
         return False, False
 
     def _open_pokestop(self, timestamp: float):
